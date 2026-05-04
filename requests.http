@@ -1,0 +1,246 @@
+@baseUrl = http://localhost:3000/api
+@token = PEGA_AQUI_TU_TOKEN
+
+### HEALTH CHECK
+GET http://localhost:3000/health
+
+### ─── USUARIOS ───────────────────────────────────────────
+
+### Registrar usuario
+POST {{baseUrl}}/user/register
+Content-Type: application/json
+
+{
+  "name": "Juan García",
+  "email": "juan@test.com",
+  "password": "Test1234!"
+}
+
+### Login (copia el token y pégalo en @token arriba)
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+  "email": "juan@test.com",
+  "password": "Test1234!"
+}
+
+### Crear compañía
+PATCH {{baseUrl}}/user/company
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "García Construcciones SL",
+  "cif": "B98765432",
+  "address": "Calle Mayor 1, Madrid",
+  "phone": "912345678",
+  "email": "info@garcia.com"
+}
+
+### Obtener usuario autenticado
+GET {{baseUrl}}/user
+Authorization: Bearer {{token}}
+
+### ─── CLIENTES ───────────────────────────────────────────
+
+### Crear cliente
+POST {{baseUrl}}/client
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Promotora Levante SA",
+  "cif": "B12345678",
+  "email": "contacto@levante.com",
+  "phone": "961234567",
+  "address": {
+    "street": "Avenida del Puerto",
+    "number": "25",
+    "postal": "46023",
+    "city": "Valencia",
+    "province": "Valencia"
+  }
+}
+
+### Listar clientes (paginación + filtro nombre)
+GET {{baseUrl}}/client?page=1&limit=10&sort=-createdAt
+Authorization: Bearer {{token}}
+
+### Buscar por nombre
+GET {{baseUrl}}/client?name=Levante
+Authorization: Bearer {{token}}
+
+### Obtener cliente concreto (sustituye el ID)
+GET {{baseUrl}}/client/CLIENTE_ID
+Authorization: Bearer {{token}}
+
+### Actualizar cliente
+PUT {{baseUrl}}/client/CLIENTE_ID
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Promotora Levante SA (actualizado)",
+  "cif": "B12345678",
+  "email": "nuevo@levante.com",
+  "phone": "961234567"
+}
+
+### Archivar cliente (soft delete)
+DELETE {{baseUrl}}/client/CLIENTE_ID?soft=true
+Authorization: Bearer {{token}}
+
+### Eliminar permanentemente
+DELETE {{baseUrl}}/client/CLIENTE_ID
+Authorization: Bearer {{token}}
+
+### Listar archivados
+GET {{baseUrl}}/client/archived
+Authorization: Bearer {{token}}
+
+### Restaurar cliente
+PATCH {{baseUrl}}/client/CLIENTE_ID/restore
+Authorization: Bearer {{token}}
+
+### ─── PROYECTOS ───────────────────────────────────────────
+
+### Crear proyecto
+POST {{baseUrl}}/project
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "clientId": "CLIENTE_ID",
+  "name": "Reforma Local Centro Valencia",
+  "projectCode": "PRJ-001",
+  "address": {
+    "street": "Gran Vía Marqués del Turia",
+    "number": "50",
+    "postal": "46005",
+    "city": "Valencia",
+    "province": "Valencia"
+  },
+  "notes": "Reforma integral de local comercial"
+}
+
+### Listar proyectos
+GET {{baseUrl}}/project?page=1&limit=10&sort=-createdAt
+Authorization: Bearer {{token}}
+
+### Filtrar por cliente
+GET {{baseUrl}}/project?client=CLIENTE_ID
+Authorization: Bearer {{token}}
+
+### Filtrar activos
+GET {{baseUrl}}/project?active=true
+Authorization: Bearer {{token}}
+
+### Obtener proyecto concreto
+GET {{baseUrl}}/project/PROYECTO_ID
+Authorization: Bearer {{token}}
+
+### Actualizar proyecto
+PUT {{baseUrl}}/project/PROYECTO_ID
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "clientId": "CLIENTE_ID",
+  "name": "Reforma actualizada",
+  "projectCode": "PRJ-001",
+  "active": false
+}
+
+### Archivar proyecto
+DELETE {{baseUrl}}/project/PROYECTO_ID?soft=true
+Authorization: Bearer {{token}}
+
+### Listar proyectos archivados
+GET {{baseUrl}}/project/archived
+Authorization: Bearer {{token}}
+
+### Restaurar proyecto
+PATCH {{baseUrl}}/project/PROYECTO_ID/restore
+Authorization: Bearer {{token}}
+
+### ─── ALBARANES ───────────────────────────────────────────
+
+### Crear albarán de horas
+POST {{baseUrl}}/deliverynote
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "projectId": "PROYECTO_ID",
+  "clientId": "CLIENTE_ID",
+  "format": "hours",
+  "workDate": "2025-06-15T08:00:00.000Z",
+  "description": "Demolición de tabiques planta baja",
+  "hours": 8
+}
+
+### Crear albarán con múltiples trabajadores
+POST {{baseUrl}}/deliverynote
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "projectId": "PROYECTO_ID",
+  "clientId": "CLIENTE_ID",
+  "format": "hours",
+  "workDate": "2025-06-16T08:00:00.000Z",
+  "description": "Equipo de albañilería",
+  "workers": [
+    { "name": "Pedro Martínez", "hours": 8 },
+    { "name": "Luis Sánchez",   "hours": 6 }
+  ]
+}
+
+### Crear albarán de material
+POST {{baseUrl}}/deliverynote
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "projectId": "PROYECTO_ID",
+  "clientId": "CLIENTE_ID",
+  "format": "material",
+  "workDate": "2025-06-17T08:00:00.000Z",
+  "description": "Suministro de materiales semana 1",
+  "material": "Cemento Portland CEM II",
+  "quantity": 50,
+  "unit": "kg"
+}
+
+### Listar albaranes
+GET {{baseUrl}}/deliverynote?page=1&limit=10
+Authorization: Bearer {{token}}
+
+### Filtrar por formato
+GET {{baseUrl}}/deliverynote?format=hours
+Authorization: Bearer {{token}}
+
+### Filtrar no firmados
+GET {{baseUrl}}/deliverynote?signed=false
+Authorization: Bearer {{token}}
+
+### Filtrar por rango de fechas
+GET {{baseUrl}}/deliverynote?from=2025-06-01&to=2025-06-30
+Authorization: Bearer {{token}}
+
+### Filtrar por proyecto
+GET {{baseUrl}}/deliverynote?project=PROYECTO_ID
+Authorization: Bearer {{token}}
+
+### Obtener albarán con populate
+GET {{baseUrl}}/deliverynote/ALBARAN_ID
+Authorization: Bearer {{token}}
+
+### Descargar PDF
+GET {{baseUrl}}/deliverynote/pdf/ALBARAN_ID
+Authorization: Bearer {{token}}
+
+### Borrar albarán (solo si no está firmado)
+DELETE {{baseUrl}}/deliverynote/ALBARAN_ID
+Authorization: Bearer {{token}}
