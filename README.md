@@ -6,8 +6,6 @@ API REST para gestión de albaranes entre clientes y proveedores.
 
 ```bash
 npm install
-cp .env.example .env
-# Rellena las variables en .env
 npm run dev
 ```
 
