@@ -11,6 +11,8 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendVerificationEmail = async (to, code) => {
+    if (process.env.NODE_ENV === 'test') return;
+
     await transporter.sendMail({
         from: '"BildyApp" <noreply@bildyapp.com>',
         to,
