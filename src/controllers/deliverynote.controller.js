@@ -95,7 +95,7 @@ export const signDeliveryNote = async (req, res) => {
         company: req.user.company._id
     });
     if (!note) throw new AppError('Albarán no encontrado', 404);
-    if (note.signed) throw new AppError('El albarán ya está firmado', 400);
+    if (note.signed) throw new AppError('El albarán ya está firmado', 409);
     if (!req.file) throw new AppError('No se subió imagen de firma', 400);
 
     const optimized = await optimizeImage(req.file.buffer);
@@ -130,7 +130,7 @@ export const deleteDeliveryNote = async (req, res) => {
         deleted: false
     });
     if (!note) throw new AppError('Albarán no encontrado', 404);
-    if (note.signed) throw new AppError('No se puede borrar un albarán firmado', 403);
+    if (note.signed) throw new AppError('No se puede borrar un albarán firmado', 409);
 
     await DeliveryNote.findByIdAndDelete(req.params.id);
     res.json({ message: 'Albarán eliminado' });

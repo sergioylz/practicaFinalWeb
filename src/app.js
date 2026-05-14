@@ -43,7 +43,7 @@ app.use(helmet());
 app.use(cors());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: 'Demasiadas peticiones' }));
 app.use(express.json({ limit: '10kb' }));
-// app.use(mongoSanitize());
+app.use(mongoSanitize());
 
 app.use((req, res, next) => { req.io = io; next(); });
 
