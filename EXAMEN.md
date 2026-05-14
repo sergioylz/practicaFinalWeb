@@ -1,4 +1,4 @@
-# EXAMEN — [Tu nombre Sergio]
+# EXAMEN — Sergio
 
 ## Reto
 F1 — REST + códigos HTTP correctos + sanitización activa
