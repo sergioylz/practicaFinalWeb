@@ -99,7 +99,7 @@ describe('DELETE /api/deliverynote/:id', () => {
 
         const res = await request(app).delete(`/api/deliverynote/${note.body._id}`)
             .set('Authorization', `Bearer ${token}`);
-        expect(res.statusCode).toBe(403);
+        expect(res.statusCode).toBe(409);
     });
 });
 
@@ -114,5 +114,51 @@ describe('GET /api/deliverynote', () => {
             .set('Authorization', `Bearer ${token}`);
         expect(res.statusCode).toBe(200);
         expect(res.body.data).toHaveLength(1);
+    });
+});
+
+describe('Status codes HTTP correctos', () => {
+
+    test('DELETE /api/deliverynote/:id con albarán firmado devuelve 409', async () => {
+        const noteRes = await request(app).post('/api/deliverynote')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ projectId, clientId, format: 'hours', workDate: '2025-06-01T00:00:00.000Z', hours: 8 });
+
+        await DeliveryNote.findByIdAndUpdate(noteRes.body._id, { signed: true });
+
+        const res = await request(app)
+            .delete(`/api/deliverynote/${noteRes.body._id}`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.status).toBe(409);
+        expect(res.body.message).toContain('firmado');
+    });
+
+    test('PATCH /api/deliverynote/:id/sign con albarán ya firmado devuelve 409', async () => {
+        const noteRes = await request(app).post('/api/deliverynote')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ projectId, clientId, format: 'hours', workDate: '2025-06-01T00:00:00.000Z', hours: 8 });
+
+        await DeliveryNote.findByIdAndUpdate(noteRes.body._id, { signed: true });
+
+        const res = await request(app)
+            .patch(`/api/deliverynote/${noteRes.body._id}/sign`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ signature: 'data:image/png;base64,...' });
+
+        expect(res.status).toBe(409);
+    });
+
+    test('POST /api/client con CIF injection es sanitizado por mongoSanitize', async () => {
+        const res = await request(app)
+            .post('/api/client')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                name: 'Test Company',
+                cif: { "$gt": "" }, 
+            });
+
+        expect(res.status).toBe(400); 
+        expect(res.body.message).toContain('cif');
     });
 });
